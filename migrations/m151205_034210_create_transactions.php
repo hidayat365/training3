@@ -10,7 +10,7 @@ class m151205_034210_create_transactions extends Migration
         $this->createTable('transactions', [
             'id' => Schema::TYPE_PK,
             'trans_code' => Schema::TYPE_STRING . ' NOT NULL',
-            'trans_date' => Schema::TYPE_INTEGER . ' NOT NULL DEFAULT 0',
+            'trans_date' => Schema::TYPE_DATE . ' NOT NULL DEFAULT 0',
             'type_id' => Schema::TYPE_INTEGER . ' NOT NULL',
             'remarks' => Schema::TYPE_STRING,
         ]);

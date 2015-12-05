@@ -1,5 +1,7 @@
 <?php
 
+// https://github.com/hidayat365/training3
+
 use yii\db\Schema;
 use yii\db\Migration;
 
