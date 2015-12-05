@@ -2,6 +2,7 @@
 
 use yii\helpers\Html;
 use yii\widgets\DetailView;
+use yii\grid\GridView;
 
 /* @var $this yii\web\View */
 /* @var $model app\models\Transactions */
@@ -35,5 +36,16 @@ $this->params['breadcrumbs'][] = $this->title;
             'remarks',
         ],
     ]) ?>
+
+    <?= GridView::widget([
+        'dataProvider' => $details,
+        'columns' => [
+            ['class' => 'yii\grid\SerialColumn'],
+
+            'item.name',
+            'quantity',
+            'remarks',
+        ],
+    ]); ?>
 
 </div>

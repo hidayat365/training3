@@ -5,6 +5,8 @@ namespace app\controllers;
 use Yii;
 use app\models\Transactions;
 use app\models\TransactionsSearch;
+use app\models\TransactionDetails;
+use app\models\TransactionDetailsSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -14,6 +16,9 @@ use yii\filters\VerbFilter;
  */
 class TransactionController extends Controller
 {
+    // properties
+    private $details = array();
+
     public function behaviors()
     {
         return [
@@ -40,6 +45,7 @@ class TransactionController extends Controller
             'dataProvider' => $dataProvider,
         ]);
     }
+    
 
     /**
      * Displays a single Transactions model.
@@ -48,8 +54,12 @@ class TransactionController extends Controller
      */
     public function actionView($id)
     {
+        $searchModel = new TransactionDetailsSearch();
+        $dataProvider = $searchModel->search(['TransactionDetailsSearch'=>['trans_id'=>$id]]);
+
         return $this->render('view', [
             'model' => $this->findModel($id),
+            'details' => $dataProvider,
         ]);
     }
 
@@ -62,13 +72,54 @@ class TransactionController extends Controller
     {
         $model = new Transactions();
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
+        // ambil data post variable
+        $post = Yii::$app->request->post();
+        // coba load ke model Transactions dan TransactionDetails
+        if ($model->load($post) && $this->loadDetails($post)) {
+            // save master record
+            if ($model->save()) {
+                foreach ($this->details as $detail) {
+                    // set foreign key
+                    $detail->trans_id = $model->id;
+                    // save detail record
+                    $detail->save();
+                }
+            } else {
+                return $this->render('create', [
+                    'model' => $model,
+                    'post' => $this->details,
+                ]);
+            }
+            // redirect
             return $this->redirect(['view', 'id' => $model->id]);
+
         } else {
             return $this->render('create', [
                 'model' => $model,
+                'post' => $this->details,
             ]);
         }
+    }
+
+    private function loadDetails($post)
+    {
+        // ambil data
+        if (isset($post['Details-item_id'])) {
+            $item = $post['Details-item_id'];
+            $quantity = $post['Details-quantity'];
+            $remarks = $post['Details-remarks'];
+            // buat object-nya
+            for ($i=0; $i<count($item); $i++) { 
+                $detail = new TransactionDetails();
+                $detail->item_id = $item[$i];
+                $detail->quantity = $quantity[$i];
+                $detail->remarks = $remarks[$i];
+                $this->details[] = $detail;
+                unset($detail);
+            }
+        }
+        // return status
+        return count($this->details) > 0;
     }
 
     /**
